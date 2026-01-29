@@ -103,7 +103,7 @@ class KineticRuntime:
         # Step 1: Autograd Sculpting and Selective Checkpointing
         optimized_model = model
         checkpoint_strategy = CheckpointStrategy()
-        memory_profile = MemoryProfile(0, 0, 0.0)
+        memory_profile = MemoryProfile()
         
         if self.sculptor_agent and self.config.enable_autograd_sculpting:
             print("Running Sculptor Agent for autograd refactoring...")

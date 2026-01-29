@@ -209,7 +209,7 @@ def attention_kernel_{seq_len}x{hidden_dim}(
         
         # Compute scores with scaling
         qk = tl.sum(q[None, :] * k, axis=1)
-        qk = qk / tl.sqrt(hidden_dim.to(tl.float32))
+        qk = qk / tl.sqrt(float(hidden_dim))
         
         # Apply softmax (simplified)
         scores = tl.exp(qk)
@@ -258,7 +258,7 @@ def attention_kernel_{seq_len}x{hidden_dim}(
         if operation in ['matmul', 'linear']:
             if len(input_shapes) >= 2:
                 M, K = input_shapes[0][-2:] if len(input_shapes[0]) >= 2 else (1, input_shapes[0][-1])
-                K2, N = input_shapes[1][-2:] if len(input_shapes[1]) >= 2 else (input_shapes[1][-1], 1)
+                K_check, N = input_shapes[1][-2:] if len(input_shapes[1]) >= 2 else (input_shapes[1][-1], 1)
                 triton_code = self.generate_matmul_kernel(M, N, K)
                 block_size = (128, 128, 32)  # Optimized for HBM3e
             else:
@@ -268,7 +268,7 @@ def attention_kernel_{seq_len}x{hidden_dim}(
             seq_len = input_shapes[0][-2] if len(input_shapes) > 0 else 512
             hidden_dim = input_shapes[0][-1] if len(input_shapes) > 0 else 512
             triton_code = self.generate_attention_kernel(seq_len, hidden_dim)
-            block_size = (64, 64)  # Balanced for attention
+            block_size = (64,)  # Single block size for attention
         else:
             # Generic kernel template
             triton_code = f"# Hardware-aware kernel for {operation}"

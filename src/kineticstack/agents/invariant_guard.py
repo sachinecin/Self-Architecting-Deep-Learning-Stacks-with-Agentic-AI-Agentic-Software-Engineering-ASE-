@@ -154,7 +154,7 @@ class InvariantGuard:
     def _check_memory_bounds(self, context: Dict[str, Any]) -> Optional[str]:
         """Check if memory usage is within bounds."""
         memory_used = context.get('memory_used_bytes', 0)
-        memory_budget = context.get('memory_budget_bytes', float('inf'))
+        memory_budget = context.get('memory_budget_bytes') or float('inf')
         
         if memory_used > memory_budget:
             return f"Memory usage {memory_used / 1e9:.2f}GB exceeds budget {memory_budget / 1e9:.2f}GB"

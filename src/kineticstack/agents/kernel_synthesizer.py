@@ -3,7 +3,7 @@ Kernel Synthesizer Agent: Hardware-Specific JIT
 Generates Triton/LLVM IR based on register pressure and hardware characteristics.
 """
 
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Any
 from dataclasses import dataclass, field
 import time
 from ..core.kernel_synthesis import KernelSynthesizer, HardwareProfile, KernelSpec
@@ -53,7 +53,7 @@ class KernelSynthesizerAgent:
         self,
         operation: str,
         input_shapes: List[Tuple[int, ...]],
-    ) -> Dict[str, any]:
+    ) -> Dict[str, Any]:
         """
         Analyze register pressure for an operation.
         
@@ -193,13 +193,13 @@ entry:
         # Adjust block size based on hardware
         if kernel_spec.operation in ['matmul', 'linear']:
             # For matrix operations, use larger blocks on H100
-            if hw_profile.compute_capability >= (9, 0):  # H100
+            if hw_profile.compute_capability[0] >= 9:  # H100
                 kernel_spec.block_size = (128, 128, 64)  # Larger K block for HBM3e
             else:
                 kernel_spec.block_size = (128, 128, 32)
         elif kernel_spec.operation == 'attention':
             # Attention benefits from balanced blocks
-            kernel_spec.block_size = (64, 64)
+            kernel_spec.block_size = (64,)
         
         # Adjust register pressure if needed
         if kernel_spec.register_pressure > hw_profile.register_count * 0.8:
@@ -241,7 +241,7 @@ entry:
         
         return result
     
-    def get_telemetry(self) -> Dict[str, any]:
+    def get_telemetry(self) -> Dict[str, Any]:
         """
         Get telemetry data about kernel compilation.
         

@@ -11,9 +11,9 @@ from dataclasses import dataclass
 @dataclass
 class MemoryProfile:
     """Memory usage profile for HBM3e optimization"""
-    peak_memory: int  # bytes
-    active_tensors: int
-    memory_bandwidth: float  # GB/s
+    peak_memory: int = 0  # bytes
+    active_tensors: int = 0
+    memory_bandwidth: float = 0.0  # GB/s
     hbm3e_optimized: bool = False
 
 

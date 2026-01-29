@@ -258,10 +258,10 @@ MIT License
 If you use KineticStack in your research, please cite:
 
 ```bibtex
-@software{kineticstack2024,
+@software{kineticstack2026,
   title={KineticStack: The Agentic AI Runtime},
   author={KineticStack Team},
-  year={2024},
+  year={2026},
   url={https://github.com/sachinecin/Self-Architecting-Deep-Learning-Stacks-with-Agentic-AI-Agentic-Software-Engineering-ASE-}
 }
 ```

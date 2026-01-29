@@ -5,7 +5,7 @@ Re-writes gradient tapes for selective checkpointing based on memory pressure.
 
 import torch
 import torch.fx as fx
-from typing import List, Dict, Set, Optional, Callable
+from typing import List, Dict, Set, Optional, Callable, Any
 from dataclasses import dataclass, field
 from ..core.autograd_sculpting import AutogradSculptor, MemoryProfile
 
@@ -48,7 +48,7 @@ class SculptorAgent:
         self,
         model: torch.nn.Module,
         example_inputs: tuple,
-    ) -> Dict[str, any]:
+    ) -> Dict[str, Any]:
         """
         Analyze the gradient tape to identify optimization opportunities.
         
