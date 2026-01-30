@@ -13,6 +13,7 @@ try:
     import pynvml
     PYNVML_AVAILABLE = True
 except ImportError:
+    pynvml = None  # type: ignore
     PYNVML_AVAILABLE = False
     warnings.warn("pynvml not available, telemetry will return mock data")
 

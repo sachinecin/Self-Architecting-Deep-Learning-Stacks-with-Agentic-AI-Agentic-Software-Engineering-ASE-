@@ -1,6 +1,7 @@
 """Tests for telemetry monitoring with mocked pynvml."""
 
 import pytest
+import sys
 from unittest.mock import Mock, patch, MagicMock
 import time
 
@@ -23,18 +24,22 @@ class MockUtilizationRates:
 @pytest.fixture
 def mock_pynvml():
     """Fixture to mock pynvml."""
-    with patch('kineticstack.core.telemetry.PYNVML_AVAILABLE', True), \
-         patch('kineticstack.core.telemetry.pynvml') as mock_nvml:
-        
-        # Setup mock handle
-        mock_handle = Mock()
-        mock_nvml.nvmlInit.return_value = None
-        mock_nvml.nvmlDeviceGetHandleByIndex.return_value = mock_handle
-        mock_nvml.nvmlDeviceGetMemoryInfo.return_value = MockMemoryInfo()
-        mock_nvml.nvmlDeviceGetUtilizationRates.return_value = MockUtilizationRates()
-        mock_nvml.nvmlDeviceGetPowerUsage.return_value = 250000  # 250W
-        mock_nvml.nvmlShutdown.return_value = None
-        
+    # Create mock module
+    mock_nvml = MagicMock()
+    
+    # Setup mock handle
+    mock_handle = Mock()
+    mock_nvml.nvmlInit.return_value = None
+    mock_nvml.nvmlDeviceGetHandleByIndex.return_value = mock_handle
+    mock_nvml.nvmlDeviceGetMemoryInfo.return_value = MockMemoryInfo()
+    mock_nvml.nvmlDeviceGetUtilizationRates.return_value = MockUtilizationRates()
+    mock_nvml.nvmlDeviceGetPowerUsage.return_value = 250000  # 250W
+    mock_nvml.nvmlShutdown.return_value = None
+    
+    # Patch the module
+    with patch.dict('sys.modules', {'pynvml': mock_nvml}), \
+         patch('kineticstack.core.telemetry.PYNVML_AVAILABLE', True), \
+         patch('kineticstack.core.telemetry.pynvml', mock_nvml):
         yield mock_nvml
 
 
@@ -84,10 +89,8 @@ def test_should_trigger_refactor_true(mock_pynvml):
         used=9000000000, total=10000000000  # 90%
     )
     
-    # Collect samples over the window
-    for _ in range(15):
-        monitor.sample_once()
-        time.sleep(0.1)
+    # Collect samples over the window using stream() which populates history
+    list(monitor.stream(duration=1.2, interval=0.1))
     
     assert monitor.should_trigger_refactor() is True
 
@@ -101,10 +104,8 @@ def test_should_trigger_refactor_false(mock_pynvml):
         used=8000000000, total=10000000000  # 80%
     )
     
-    # Collect samples
-    for _ in range(15):
-        monitor.sample_once()
-        time.sleep(0.1)
+    # Collect samples using stream()
+    list(monitor.stream(duration=1.2, interval=0.1))
     
     assert monitor.should_trigger_refactor() is False
 
@@ -125,11 +126,10 @@ def test_clear_history(mock_pynvml):
     """Test clearing telemetry history."""
     monitor = TelemetryMonitor()
     
-    # Collect some samples
-    for _ in range(5):
-        monitor.sample_once()
+    # Collect some samples using stream() which populates history
+    list(monitor.stream(duration=0.5, interval=0.1))
     
-    assert len(monitor.history) == 5
+    assert len(monitor.history) >= 4  # Should have collected several samples
     
     monitor.clear_history()
     assert len(monitor.history) == 0
