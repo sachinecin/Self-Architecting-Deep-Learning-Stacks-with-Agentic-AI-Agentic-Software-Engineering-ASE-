@@ -1,0 +1,97 @@
+name: Python CI
+
+on:
+  push:
+    branches: [ main, workspace/** ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    
+    - name: Install Poetry
+      run: |
+        curl -sSL https://install.python-poetry.org | python3 -
+        echo "$HOME/.local/bin" >> $GITHUB_PATH
+    
+    - name: Install dependencies
+      run: |
+        poetry install
+    
+    - name: Run black
+      run: |
+        poetry run black --check kineticstack tests
+    
+    - name: Run isort
+      run: |
+        poetry run isort --check-only kineticstack tests
+    
+    - name: Run flake8
+      run: |
+        poetry run flake8 kineticstack tests --max-line-length=100 --extend-ignore=E203,W503
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    
+    - name: Install Poetry
+      run: |
+        curl -sSL https://install.python-poetry.org | python3 -
+        echo "$HOME/.local/bin" >> $GITHUB_PATH
+    
+    - name: Install dependencies
+      run: |
+        poetry install
+    
+    - name: Run tests
+      run: |
+        poetry run pytest -v --tb=short
+    
+    - name: Run tests with coverage
+      run: |
+        poetry run pytest --cov=kineticstack --cov-report=xml --cov-report=term
+
+  invariants:
+    runs-on: ubuntu-latest
+    # This job is gated and should be run on representative hardware
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[run-invariants]')
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    
+    - name: Install Poetry
+      run: |
+        curl -sSL https://install.python-poetry.org | python3 -
+        echo "$HOME/.local/bin" >> $GITHUB_PATH
+    
+    - name: Install dependencies
+      run: |
+        poetry install
+    
+    - name: Run invariants microbenchmark
+      run: |
+        poetry run pytest tests/test_invariants.py -v
+      continue-on-error: true
+    
+    - name: Note about hardware requirements
+      run: |
+        echo "⚠️  Invariants microbenchmark should be run on representative GPU hardware"
+        echo "This job runs on standard CI runners and may not reflect production performance"
