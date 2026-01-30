@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600">
+  <defs>
+    <style>
+      .title { font: bold 24px sans-serif; fill: #2c3e50; }
+      .subtitle { font: 16px sans-serif; fill: #34495e; }
+      .box-title { font: bold 14px sans-serif; fill: white; }
+      .box-text { font: 12px sans-serif; fill: #2c3e50; }
+      .arrow-text { font: 11px sans-serif; fill: #7f8c8d; }
+      .component-box { fill: #3498db; stroke: #2980b9; stroke-width: 2; }
+      .agent-box { fill: #e74c3c; stroke: #c0392b; stroke-width: 2; }
+      .core-box { fill: #2ecc71; stroke: #27ae60; stroke-width: 2; }
+      .telemetry-box { fill: #f39c12; stroke: #d68910; stroke-width: 2; }
+      .arrow { stroke: #95a5a6; stroke-width: 2; fill: none; marker-end: url(#arrowhead); }
+    </style>
+    <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <polygon points="0 0, 10 3, 0 6" fill="#95a5a6" />
+    </marker>
+  </defs>
+  
+  <!-- Title -->
+  <text x="400" y="40" text-anchor="middle" class="title">KineticStack Architecture</text>
+  <text x="400" y="65" text-anchor="middle" class="subtitle">Self-Architecting Deep Learning with Agentic AI</text>
+  
+  <!-- Hardware Layer -->
+  <rect x="50" y="500" width="700" height="80" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="2" rx="5"/>
+  <text x="400" y="530" text-anchor="middle" class="box-title" fill="#2c3e50">Hardware Layer</text>
+  <text x="400" y="550" text-anchor="middle" class="box-text">GPU (CUDA) + NVML Telemetry</text>
+  <text x="400" y="570" text-anchor="middle" class="box-text">HBM · SM Occupancy · Power Draw</text>
+  
+  <!-- Telemetry Monitor -->
+  <rect x="50" y="380" width="200" height="90" class="telemetry-box" rx="5"/>
+  <text x="150" y="405" text-anchor="middle" class="box-title">TelemetryMonitor</text>
+  <text x="150" y="425" text-anchor="middle" class="box-text" fill="white">· stream()</text>
+  <text x="150" y="442" text-anchor="middle" class="box-text" fill="white">· sample_once()</text>
+  <text x="150" y="459" text-anchor="middle" class="box-text" fill="white">· should_trigger_refactor()</text>
+  
+  <!-- Sculptor Agents -->
+  <rect x="300" y="380" width="200" height="90" class="agent-box" rx="5"/>
+  <text x="400" y="405" text-anchor="middle" class="box-title">Sculptor Agent</text>
+  <text x="400" y="425" text-anchor="middle" class="box-text" fill="white">Reasoner: torch.fx tracing</text>
+  <text x="400" y="442" text-anchor="middle" class="box-text" fill="white">Executor: Checkpointing</text>
+  <text x="400" y="459" text-anchor="middle" class="box-text" fill="white">Selective optimization</text>
+  
+  <!-- Invariants -->
+  <rect x="550" y="380" width="200" height="90" class="core-box" rx="5"/>
+  <text x="650" y="405" text-anchor="middle" class="box-title">Invariants</text>
+  <text x="650" y="425" text-anchor="middle" class="box-text" fill="white">@verify_invariant</text>
+  <text x="650" y="442" text-anchor="middle" class="box-text" fill="white">P99 latency checks</text>
+  <text x="650" y="459" text-anchor="middle" class="box-text" fill="white">Constraint enforcement</text>
+  
+  <!-- Kinetic Manager -->
+  <rect x="250" y="240" width="300" height="90" class="component-box" rx="5"/>
+  <text x="400" y="265" text-anchor="middle" class="box-title">KineticManager</text>
+  <text x="400" y="285" text-anchor="middle" class="box-text" fill="white">Orchestration Layer</text>
+  <text x="400" y="302" text-anchor="middle" class="box-text" fill="white">· Coordinates telemetry, agents, optimizations</text>
+  <text x="400" y="319" text-anchor="middle" class="box-text" fill="white">· Adaptive reasoning loops</text>
+  
+  <!-- User Models -->
+  <rect x="250" y="100" width="300" height="90" fill="#9b59b6" stroke="#8e44ad" stroke-width="2" rx="5"/>
+  <text x="400" y="125" text-anchor="middle" class="box-title">User Models</text>
+  <text x="400" y="145" text-anchor="middle" class="box-text" fill="white">Transformer Models</text>
+  <text x="400" y="162" text-anchor="middle" class="box-text" fill="white">Deep Learning Workloads</text>
+  <text x="400" y="179" text-anchor="middle" class="box-text" fill="white">Training & Inference</text>
+  
+  <!-- Arrows -->
+  <!-- Hardware to Telemetry -->
+  <path d="M 150 500 L 150 470" class="arrow"/>
+  
+  <!-- Hardware to Sculptor -->
+  <path d="M 400 500 L 400 470" class="arrow"/>
+  
+  <!-- Hardware to Invariants -->
+  <path d="M 650 500 L 650 470" class="arrow"/>
+  
+  <!-- Telemetry to Manager -->
+  <path d="M 200 380 L 280 330" class="arrow"/>
+  
+  <!-- Sculptor to Manager -->
+  <path d="M 400 380 L 400 330" class="arrow"/>
+  
+  <!-- Invariants to Manager -->
+  <path d="M 600 380 L 520 330" class="arrow"/>
+  
+  <!-- Manager to Models -->
+  <path d="M 400 240 L 400 190" class="arrow"/>
+  
+  <!-- Feedback loop -->
+  <path d="M 550 150 Q 700 150 700 420 L 670 420" class="arrow" stroke-dasharray="5,5"/>
+  <text x="710" y="290" class="arrow-text">Continuous</text>
+  <text x="710" y="305" class="arrow-text">Monitoring</text>
+  
+  <!-- Optimization flow -->
+  <path d="M 250 150 Q 100 150 100 420 L 130 420" class="arrow" stroke-dasharray="5,5"/>
+  <text x="20" y="290" class="arrow-text">Adaptive</text>
+  <text x="20" y="305" class="arrow-text">Optimization</text>
+  
+</svg>
