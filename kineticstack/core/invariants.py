@@ -59,9 +59,9 @@ def verify_invariant(
                 end_time = time.perf_counter()
                 latencies.append((end_time - start_time) * 1000)  # Convert to ms
 
-            # Calculate p99
+            # Calculate p99 (99th percentile)
             latencies.sort()
-            p99_index = int(0.99 * len(latencies))
+            p99_index = max(0, int(0.99 * len(latencies)) - 1)
             p99_latency = latencies[p99_index]
 
             # Check threshold

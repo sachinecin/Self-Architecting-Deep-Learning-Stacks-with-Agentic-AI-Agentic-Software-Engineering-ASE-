@@ -15,16 +15,16 @@ class TelemetryLogger:
     Logger for telemetry data with support for JSON and text formats.
     """
 
-    def __init__(self, log_path: Optional[str] = None, format: str = "json"):
+    def __init__(self, log_path: Optional[str] = None, log_format: str = "json"):
         """
         Initialize the telemetry logger.
 
         Args:
             log_path: Path to log file. If None, logs to stdout.
-            format: Log format ('json' or 'text').
+            log_format: Log format ('json' or 'text').
         """
         self.log_path = Path(log_path) if log_path else None
-        self.format = format
+        self.log_format = log_format
         self._file_handle = None
 
         if self.log_path:
@@ -42,7 +42,7 @@ class TelemetryLogger:
         timestamp = time.time()
         entry = {"timestamp": timestamp, "event_type": event_type, "data": data}
 
-        if self.format == "json":
+        if self.log_format == "json":
             log_line = json.dumps(entry)
         else:
             log_line = f"[{timestamp}] {event_type}: {data}"

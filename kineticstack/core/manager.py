@@ -35,13 +35,13 @@ class KineticStackManager:
         self.telemetry_monitor = telemetry_monitor or TelemetryMonitor()
         self.sculptor_executor = sculptor_executor or SculptorExecutor()
         self.auto_refactor = auto_refactor
-        self._original_modules = {}
 
     def monitor_and_optimize(
         self,
         model: Callable,
         optimization_callback: Optional[Callable] = None,
         check_interval_seconds: float = 5.0,
+        max_duration_seconds: float = 60.0,
     ):
         """
         Monitor telemetry and trigger optimization when thresholds are exceeded.
@@ -50,9 +50,10 @@ class KineticStackManager:
             model: PyTorch model or callable to potentially optimize.
             optimization_callback: Optional callback when optimization is triggered.
             check_interval_seconds: How often to check telemetry.
+            max_duration_seconds: Maximum duration to monitor (default: 60 seconds).
         """
         for sample in self.telemetry_monitor.stream(
-            interval_seconds=check_interval_seconds, duration_seconds=60.0
+            interval_seconds=check_interval_seconds, duration_seconds=max_duration_seconds
         ):
             if self.telemetry_monitor.should_trigger_refactor():
                 if self.auto_refactor:

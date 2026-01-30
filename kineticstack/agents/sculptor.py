@@ -1,8 +1,9 @@
 """
 Sculptor agent for KineticStack.
 
-Uses torch.fx to reason about model graphs and selectively inject activation
-checkpointing to optimize memory usage.
+Analyzes model structure and selectively injects activation checkpointing
+to optimize memory usage. Uses heuristics based on module types to identify
+optimization opportunities.
 """
 
 from typing import Any, Callable, Dict
@@ -21,12 +22,13 @@ from kineticstack.agents.base import BaseAgent
 
 class SculptorExecutor(BaseAgent):
     """
-    Agentic sculptor that reasons about model computation graphs and applies
+    Agentic sculptor that analyzes model structure and applies
     selective activation checkpointing.
 
-    This agent uses torch.fx symbolic tracing (when available) to understand
-    model structure and strategically inject checkpointing to reduce memory
-    usage while maintaining acceptable performance.
+    This agent uses heuristics based on module types to identify where
+    checkpointing should be applied, targeting transformer blocks and
+    large linear layers to reduce memory usage while maintaining
+    acceptable performance.
     """
 
     def __init__(self, config: Dict[str, Any] = None):
@@ -101,39 +103,43 @@ class SculptorExecutor(BaseAgent):
         if not TORCH_AVAILABLE:
             return
 
-        # Navigate to the parent module and the target module
-        parts = module_name.split(".")
-        parent = model
-        for part in parts[:-1]:
-            parent = getattr(parent, part)
+        try:
+            # Navigate to the parent module and the target module
+            parts = module_name.split(".")
+            parent = model
+            for part in parts[:-1]:
+                parent = getattr(parent, part)
 
-        target_name = parts[-1]
-        if not hasattr(parent, target_name):
-            return
+            target_name = parts[-1]
+            if not hasattr(parent, target_name):
+                return
 
-        target_module = getattr(parent, target_name)
+            target_module = getattr(parent, target_name)
 
-        # Store original forward if not already stored
-        if module_name not in self._original_forwards:
-            self._original_forwards[module_name] = target_module.forward
+            # Store original forward if not already stored
+            if module_name not in self._original_forwards:
+                self._original_forwards[module_name] = target_module.forward
 
-        # Create checkpointed forward pass
-        original_forward = self._original_forwards[module_name]
+            # Create checkpointed forward pass
+            original_forward = self._original_forwards[module_name]
 
-        def checkpointed_forward(*args, **kwargs):
-            # Conservative: only checkpoint if args are tensors and no kwargs
-            if kwargs or not args:
-                return original_forward(*args, **kwargs)
+            def checkpointed_forward(*args, **kwargs):
+                # Conservative: only checkpoint if args are tensors and no kwargs
+                if kwargs or not args:
+                    return original_forward(*args, **kwargs)
 
-            # Check if all args are tensors
-            if all(isinstance(arg, torch.Tensor) for arg in args):
-                return checkpoint(original_forward, *args, use_reentrant=False)
-            else:
-                return original_forward(*args, **kwargs)
+                # Check if all args are tensors
+                if all(isinstance(arg, torch.Tensor) for arg in args):
+                    return checkpoint(original_forward, *args, use_reentrant=False)
+                else:
+                    return original_forward(*args, **kwargs)
 
-        # Replace forward method
-        target_module.forward = checkpointed_forward
-        self._checkpointed_modules.add(module_name)
+            # Replace forward method
+            target_module.forward = checkpointed_forward
+            self._checkpointed_modules.add(module_name)
+        except (AttributeError, TypeError):
+            # If module path is invalid or module doesn't exist, skip silently
+            pass
 
     def apply_kinetic_optimization(self, model: Callable) -> Callable:
         """
