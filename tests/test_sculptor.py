@@ -97,7 +97,7 @@ def test_sculptor_execution_plan():
     plan = {"model": model, "checkpoint_layers": ["encoder_layer"]}
 
     # Execute the plan
-    result = sculptor.execute(plan)
+    sculptor.execute(plan)  # noqa: F841
 
     # Model should be modified
     assert len(sculptor._checkpointed_modules) > 0

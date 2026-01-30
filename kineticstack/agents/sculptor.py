@@ -5,8 +5,7 @@ Uses torch.fx to reason about model graphs and selectively inject activation
 checkpointing to optimize memory usage.
 """
 
-import inspect
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Dict
 
 try:
     import torch

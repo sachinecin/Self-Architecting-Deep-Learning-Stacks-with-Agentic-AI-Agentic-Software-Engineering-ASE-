@@ -102,7 +102,7 @@ def test_verify_invariant_calculates_p99_correctly():
             time.sleep(0.001)
         return call_count
 
-    result = varying_function()
+    varying_function()  # noqa: F841
     # Should have run warmup + samples times
     assert call_count == 100
 
@@ -125,6 +125,6 @@ def test_verify_invariant_warmup():
         time.sleep(0.001)
         return call_count
 
-    result = counting_function()
+    counting_function()  # noqa: F841
     # Should have called warmup (5) + samples (10) times
     assert call_count == 15

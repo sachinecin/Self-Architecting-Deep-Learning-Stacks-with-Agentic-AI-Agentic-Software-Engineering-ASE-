@@ -4,8 +4,9 @@ Tests for telemetry monitoring.
 Uses mocked pynvml to test telemetry functionality without requiring GPU hardware.
 """
 
-import pytest
 from unittest.mock import MagicMock, patch
+
+import pytest
 
 
 class MockMemoryInfo:

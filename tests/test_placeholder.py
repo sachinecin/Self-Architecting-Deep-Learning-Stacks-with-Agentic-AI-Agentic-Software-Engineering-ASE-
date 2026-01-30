@@ -4,20 +4,18 @@ Placeholder test to ensure basic imports work.
 This serves as a smoke test for the package structure.
 """
 
-import pytest
-
 
 def test_imports():
     """Test that all main modules can be imported."""
-    import kineticstack
-    from kineticstack import (
+    import kineticstack  # noqa: F401
+    from kineticstack import (  # noqa: F401
         InvariantViolationError,
         KineticStackManager,
         TelemetryMonitor,
         verify_invariant,
     )
-    from kineticstack.agents import BaseAgent, SculptorExecutor
-    from kineticstack.telemetry import TelemetryLogger
+    from kineticstack.agents import BaseAgent, SculptorExecutor  # noqa: F401
+    from kineticstack.telemetry import TelemetryLogger  # noqa: F401
 
     # Verify version is set
     assert hasattr(kineticstack, "__version__")
