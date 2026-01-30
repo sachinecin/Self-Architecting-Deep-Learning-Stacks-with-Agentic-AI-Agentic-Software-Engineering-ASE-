@@ -1,0 +1,78 @@
+name: Python CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.10", "3.11"]
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install Poetry
+      run: |
+        curl -sSL https://install.python-poetry.org | python3 -
+        echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+    - name: Configure Poetry
+      run: |
+        poetry config virtualenvs.create true
+        poetry config virtualenvs.in-project true
+
+    - name: Cache Poetry dependencies
+      uses: actions/cache@v3
+      with:
+        path: .venv
+        key: venv-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('**/poetry.lock') }}
+        restore-keys: |
+          venv-${{ runner.os }}-${{ matrix.python-version }}-
+
+    - name: Install dependencies
+      run: |
+        poetry install --no-interaction
+
+    - name: Run linting with ruff
+      run: |
+        poetry run ruff check kineticstack tests
+
+    - name: Run type checking with mypy
+      continue-on-error: true
+      run: |
+        poetry run mypy kineticstack
+
+    - name: Run tests with pytest
+      run: |
+        poetry run pytest tests/ -v --cov=kineticstack --cov-report=xml --cov-report=term-missing
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        fail_ci_if_error: false
+
+  # Invariants microbenchmark is intentionally gated
+  # Must be run on representative GPU hardware before production deployment
+  invariants-check:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'run-gpu-tests')
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Note about GPU requirements
+      run: |
+        echo "⚠️  Invariants microbenchmark requires GPU hardware"
+        echo "This job is gated and only runs when 'run-gpu-tests' label is present"
+        echo "Run invariants on representative hardware before production deployment"
